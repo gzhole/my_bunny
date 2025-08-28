@@ -1,0 +1,347 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Math Visualizations for the Single-Neuron Bunny Classifier\n",
+    "\n",
+    "This notebook provides simple, visual explanations of the math behind our model:\n",
+    "- Linear score: $z = w \\cdot x + b$\n",
+    "- Sigmoid: $\\sigma(z) = 1/(1+e^{-z})$\n",
+    "- Binary cross-entropy (log loss)\n",
+    "- Gradient descent (why the update uses $(p - y)$)\n",
+    "- Learning curves and a small evaluation example\n",
+    "\n",
+    "The examples here use small synthetic data to keep things fast and clear."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import math\n",
+    "import numpy as np\n",
+    "import torch\n",
+    "import torch.nn as nn\n",
+    "import torch.optim as optim\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "# Reproducibility\n",
+    "np.random.seed(42)\n",
+    "torch.manual_seed(42)\n",
+    "\n",
+    "# Use CPU for simplicity\n",
+    "device = torch.device('cpu')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1) Linear Score: $z = w \\cdot x + b$\n",
+    "\n",
+    "- **Why**: we want a single number summarizing the image.\n",
+    "- **What**: weighted sum of pixel values (here we use 3 values for a tiny example).\n",
+    "- **Tie-in**: in the project, $x$ will be a 4096-length vector (64×64 grayscale)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Tiny linear score example (3 features)\n",
+    "x = np.array([0.2, 0.7, 0.1])\n",
+    "w = np.array([1.0, -0.5, 0.3])\n",
+    "b = 0.2\n",
+    "z = float(w @ x + b)\n",
+    "print(f'x = {x}')\n",
+    "print(f'w = {w}, b = {b}')\n",
+    "print(f'z = w·x + b = {z:.4f}')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2) Sigmoid: $\\sigma(z) = 1/(1+e^{-z})$\n",
+    "\n",
+    "- **Why**: convert any real score into a probability between 0 and 1.\n",
+    "- **What**: large positive $z$ → near 1, large negative $z$ → near 0, $z=0$ → 0.5.\n",
+    "- **Tie-in**: interpret $p=\\sigma(z)$ as the probability the image is your bunny."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plot the sigmoid function\n",
+    "z_vals = np.linspace(-6, 6, 400)\n",
+    "sigmoid = 1/(1+np.exp(-z_vals))\n",
+    "plt.figure(figsize=(5,3))\n",
+    "plt.plot(z_vals, sigmoid, label='sigmoid(z)')\n",
+    "plt.axvline(0, color='gray', linestyle='--', linewidth=1)\n",
+    "plt.xlabel('z')\n",
+    "plt.ylabel('σ(z)')\n",
+    "plt.title('Sigmoid squashes scores to probabilities')\n",
+    "plt.ylim(-0.05, 1.05)\n",
+    "plt.grid(alpha=0.3)\n",
+    "plt.legend()\n",
+    "plt.show()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3) Binary Cross-Entropy (Log Loss)\n",
+    "\n",
+    "- **Why**: measure how bad a prediction is.\n",
+    "- **What**: $L = -[y\\log(p) + (1-y)\\log(1-p)]$, small when confident and correct.\n",
+    "- **Tie-in**: we minimize average loss over batches of images during training."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plot BCE curves for y=1 and y=0\n",
+    "eps = 1e-9\n",
+    "p = np.linspace(0+eps, 1-eps, 400)\n",
+    "bce_y1 = -np.log(p)\n",
+    "bce_y0 = -np.log(1-p)\n",
+    "plt.figure(figsize=(5,3))\n",
+    "plt.plot(p, bce_y1, label='y=1: -log(p)')\n",
+    "plt.plot(p, bce_y0, label='y=0: -log(1-p)')\n",
+    "plt.xlabel('Predicted probability p')\n",
+    "plt.ylabel('Loss')\n",
+    "plt.title('Binary Cross-Entropy (Log Loss)')\n",
+    "plt.ylim(0, 6)\n",
+    "plt.grid(alpha=0.3)\n",
+    "plt.legend()\n",
+    "plt.show()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### BCE as a function of score z\n",
+    "\n",
+    "We plot $L(z) = -[y\\log(\\sigma(z)) + (1-y)\\log(1-\\sigma(z))]$ for y=0 and y=1.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Plot BCE L(z) for y=1 and y=0\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "z = np.linspace(-10, 10, 400)\n",
+    "p = 1/(1+np.exp(-z))  # sigmoid(z)\n",
+    "eps = 1e-9\n",
+    "L_y1 = -np.log(p + eps)\n",
+    "L_y0 = -np.log(1 - p + eps)\n",
+    "\n",
+    "plt.figure(figsize=(5,3))\n",
+    "plt.plot(z, L_y1, label='y=1: L(z)')\n",
+    "plt.plot(z, L_y0, label='y=0: L(z)')\n",
+    "plt.xlabel('z')\n",
+    "plt.ylabel('L(z)')\n",
+    "plt.title('Binary Cross-Entropy as a Function of z')\n",
+    "plt.ylim(0, 6)\n",
+    "plt.grid(alpha=0.3)\n",
+    "plt.legend()\n",
+    "plt.show()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4) Gradient Descent (Learning)\n",
+    "\n",
+    "- **Why**: change $w,b$ to reduce loss.\n",
+    "- **Key idea**: the derivative simplifies so updates use $(p-y)$.\n",
+    "- **Tie-in**: PyTorch computes gradients automatically; we choose learning rate and epochs."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# One gradient descent step (tiny example)\n",
+    "def sigmoid_np(z):\n",
+    "    return 1/(1+np.exp(-z))\n",
+    "\n",
+    "x = np.array([0.2, 0.5])\n",
+    "y = 1.0\n",
+    "w = np.array([0.0, 0.0])\n",
+    "b = 0.0\n",
+    "eta = 1.0  # large step for illustration\n",
+    "\n",
+    "z = float(w @ x + b)\n",
+    "p = sigmoid_np(z)\n",
+    "L = -(y*np.log(p+1e-9) + (1-y)*np.log(1-p+1e-9))\n",
+    "print(f'Before: z={z:.3f}, p={p:.3f}, loss={L:.3f}')\n",
+    "\n",
+    "# Gradients for logistic regression with BCE\n",
+    "err = p - y\n",
+    "grad_w = err * x\n",
+    "grad_b = err\n",
+    "\n",
+    "w = w - eta * grad_w\n",
+    "b = b - eta * grad_b\n",
+    "\n",
+    "z2 = float(w @ x + b)\n",
+    "p2 = sigmoid_np(z2)\n",
+    "L2 = -(y*np.log(p2+1e-9) + (1-y)*np.log(1-p2+1e-9))\n",
+    "print(f'After:  z={z2:.3f}, p={p2:.3f}, loss={L2:.3f}')\n",
+    "print(f'Updated w={w}, b={b:.3f}')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5) Learning Curves and Simple Evaluation (Synthetic Data)\n",
+    "\n\n",
+    "We create an easy, linearly separable 2D dataset, train a one-neuron model,\n",
+    "record training/validation loss, and compute accuracy and a confusion matrix.\n",
+    "This mimics what we'll do with images, but stays tiny and fast."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Create synthetic 2D data (two Gaussian blobs)\n",
+    "n_per_class = 200\n",
+    "mean_pos = np.array([2.0, 2.0])\n",
+    "mean_neg = np.array([-2.0, -2.0])\n",
+    "cov = np.array([[0.8, 0.2],[0.2, 0.8]])\n",
+    "X_pos = np.random.multivariate_normal(mean_pos, cov, size=n_per_class)\n",
+    "X_neg = np.random.multivariate_normal(mean_neg, cov, size=n_per_class)\n",
+    "y_pos = np.ones((n_per_class, 1))\n",
+    "y_neg = np.zeros((n_per_class, 1))\n",
+    "X = np.vstack([X_pos, X_neg]).astype(np.float32)\n",
+    "y = np.vstack([y_pos, y_neg]).astype(np.float32)\n",
+    "\n",
+    "# Shuffle and split train/val\n",
+    "perm = np.random.permutation(len(X))\n",
+    "X = X[perm]; y = y[perm]\n",
+    "split = int(0.8 * len(X))\n",
+    "X_train, X_val = X[:split], X[split:]\n",
+    "y_train, y_val = y[:split], y[split:]\n",
+    "\n",
+    "X_train_t = torch.from_numpy(X_train).to(device)\n",
+    "y_train_t = torch.from_numpy(y_train).to(device)\n",
+    "X_val_t = torch.from_numpy(X_val).to(device)\n",
+    "y_val_t = torch.from_numpy(y_val).to(device)\n",
+    "\n",
+    "# One-neuron model: Linear(2->1)\n",
+    "model = nn.Linear(2, 1).to(device)\n",
+    "criterion = nn.BCEWithLogitsLoss()\n",
+    "optimizer = optim.SGD(model.parameters(), lr=0.1)\n",
+    "\n",
+    "train_losses, val_losses = [], []\n",
+    "epochs = 100\n",
+    "for epoch in range(epochs):\n",
+    "    # Forward (train)\n",
+    "    logits = model(X_train_t)\n",
+    "    loss = criterion(logits, y_train_t)\n",
+    "    # Backward\n",
+    "    optimizer.zero_grad()\n",
+    "    loss.backward()\n",
+    "    optimizer.step()\n",
+    "\n",
+    "    # Validation\n",
+    "    with torch.no_grad():\n",
+    "        val_logits = model(X_val_t)\n",
+    "        val_loss = criterion(val_logits, y_val_t)\n",
+    "    train_losses.append(float(loss.item()))\n",
+    "    val_losses.append(float(val_loss.item()))\n",
+    "\n",
+    "plt.figure(figsize=(5,3))\n",
+    "plt.plot(train_losses, label='train loss')\n",
+    "plt.plot(val_losses, label='val loss')\n",
+    "plt.xlabel('Epoch')\n",
+    "plt.ylabel('Loss')\n",
+    "plt.title('Learning Curves (Synthetic Data)')\n",
+    "plt.grid(alpha=0.3)\n",
+    "plt.legend()\n",
+    "plt.show()\n",
+    "\n",
+    "# Simple evaluation on validation set\n",
+    "with torch.no_grad():\n",
+    "    probs = torch.sigmoid(model(X_val_t))\n",
+    "    preds = (probs >= 0.5).float()\n",
+    "\n",
+    "y_true = y_val_t.cpu().numpy().astype(int)\n",
+    "y_pred = preds.cpu().numpy().astype(int)\n",
+    "acc = (y_true == y_pred).mean()\n",
+    "TP = int(((y_true==1) & (y_pred==1)).sum())\n",
+    "TN = int(((y_true==0) & (y_pred==0)).sum())\n",
+    "FP = int(((y_true==0) & (y_pred==1)).sum())\n",
+    "FN = int(((y_true==1) & (y_pred==0)).sum())\n",
+    "print(f'Accuracy: {acc:.3f}')\n",
+    "print(f'Confusion Matrix (val): TP={TP}, FP={FP}, TN={TN}, FN={FN}')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 6) How This Ties to the Bunny Project\n",
+    "\n",
+    "- Replace 2D points with images: convert a 64×64 grayscale image to a 4096-length vector $x$.\n",
+    "- Use a single linear layer `Linear(4096 → 1)`.\n",
+    "- Train with `BCEWithLogitsLoss` and SGD as in the synthetic example.\n",
+    "- Plot training/validation loss to verify learning.\n",
+    "- Evaluate with accuracy and a confusion matrix on a held-out test set.\n",
+    "\n",
+    "This preserves mathematical simplicity while demonstrating real learning."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "**Further Reading**\n",
+    "- Binary Cross-Entropy (Log Loss): https://www.geeksforgeeks.org/deep-learning/binary-cross-entropy-log-loss-for-binary-classification/\n",
+    "- Sigmoid (Logistic Function): https://developers.google.com/machine-learning/crash-course/logistic-regression/sigmoid-function\n",
+    "- Gradient Descent (Overview): https://www.geeksforgeeks.org/machine-learning/gradient-descent-algorithm-and-its-variants/\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "pygments_lexer": "ipython3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

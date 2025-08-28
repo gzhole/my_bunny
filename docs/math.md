@@ -80,6 +80,15 @@ We turn each image into a grayscale 64×64 picture (4,096 numbers between 0 and 
   - Score: z = w·x + b = 0. Probability: p = σ(0) = 0.5.
   - Error signal: (p − y) = −0.5.
   - Gradients: ∂L/∂w = (p − y)·x = −0.5·[0.2, 0.5] = [−0.1, −0.25]; ∂L/∂b = (p − y) = −0.5.
+  - Why those gradients (step-by-step):
+    1. Binary cross‑entropy (one example) with p = σ(z): L = −[ y·log(p) + (1−y)·log(1−p) ].
+    2. Differentiate w.r.t. p: ∂L/∂p = −[ y/p − (1−y)/(1−p) ].
+    3. Sigmoid derivative: ∂p/∂z = p(1−p). At z = 0, p = 0.5 ⇒ ∂p/∂z = 0.25.
+    4. Chain rule to z: ∂L/∂z = (∂L/∂p)(∂p/∂z) = −[ y/p − (1−y)/(1−p) ]·p(1−p).
+       Plug y = 1, p = 0.5: ∂L/∂z = −[ 1/0.5 − 0/0.5 ]·(0.5)(0.5) = −2·0.25 = −0.5 = (p − y).
+    5. Since z = w·x + b, we have ∂z/∂w = x and ∂z/∂b = 1.
+    6. Chain rule to parameters:
+       ∂L/∂w = (∂L/∂z)·x = (−0.5)·[0.2, 0.5] = [−0.1, −0.25];   ∂L/∂b = (∂L/∂z)·1 = −0.5.
   - With learning rate η = 1.0 for illustration:
     - w ← [0, 0] − 1·[−0.1, −0.25] = [0.1, 0.25]
     - b ← 0 − 1·(−0.5) = 0.5
