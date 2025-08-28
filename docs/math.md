@@ -39,6 +39,30 @@ We turn each image into a grayscale 64×64 picture (4,096 numbers between 0 and 
 - **In this project**
   - We interpret p = σ(z) as “probability that the image is my bunny.” At prediction time, we say class = 1 (my bunny) if p ≥ 0.5, else class = 0.
 
+### Optional: Derivative of the Sigmoid (why σ′(z) = σ(z)(1 − σ(z)))
+
+- Start from σ(z) = 1 / (1 + e^(−z)). Let u(z) = 1 + e^(−z), so σ(z) = u(z)^(−1).
+- Chain rule: dσ/dz = (−1)·u^(−2) · du/dz.
+- Differentiate u: du/dz = d(1 + e^(−z))/dz = −e^(−z).
+- Put together: dσ/dz = (−1)·u^(−2)·(−e^(−z)) = e^(−z) / (1 + e^(−z))^2.
+- Show it equals σ(1 − σ):
+  - σ(z) = 1/(1 + e^(−z)), and 1 − σ(z) = e^(−z)/(1 + e^(−z)).
+  - Multiply: σ(z)(1 − σ(z)) = [1/(1 + e^(−z))] · [e^(−z)/(1 + e^(−z))] = e^(−z)/(1 + e^(−z))^2.
+  - Therefore, σ′(z) = σ(z)(1 − σ(z)).
+- Quick check at z = 0: σ(0) = 0.5 ⇒ σ′(0) = 0.5·(1 − 0.5) = 0.25.
+
+Alternative derivation (quotient rule):
+- Write σ(z) = e^z / (1 + e^z).
+- Quotient rule: dσ/dz = [(e^z)(1+e^z) − (e^z)(e^z)] / (1 + e^z)^2
+  = [e^z + e^{2z} − e^{2z}] / (1 + e^z)^2
+  = e^z / (1 + e^z)^2
+  = σ(z)(1 − σ(z)).
+
+Useful properties (good for intuition):
+- 0 < σ′(z) ≤ 1/4; the maximum slope is 1/4 at z = 0 (where σ = 0.5).
+- The curve is steepest near z ≈ 0 and flattens for large |z| (saturation). When saturated, updates are small because σ′(z) is small.
+- Using p = σ(z), the derivative is simply σ′(z) = p(1 − p). This is the shortcut used in the gradient derivation.
+
 ---
 
 ## 3) Binary Cross‑Entropy (Log Loss)

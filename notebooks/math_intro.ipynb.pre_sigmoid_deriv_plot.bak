@@ -100,43 +100,6 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Sigmoid and its derivative\n",
-    "\n",
-    "We now plot the sigmoid $\\sigma(z)$ together with its derivative $\\sigma'(z)=\\sigma(z)(1-\\sigma(z))$. ",
-    "This shows the steepest slope at $z=0$ and saturation for large $|z|$.\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
-   "source": [
-    "# Plot sigmoid and its derivative\n",
-    "import numpy as np\n",
-    "import matplotlib.pyplot as plt\n",
-    "\n",
-    "z = np.linspace(-6, 6, 400)\n",
-    "sig = 1/(1+np.exp(-z))\n",
-    "sig_prime = sig * (1 - sig)\n",
-    "\n",
-    "plt.figure(figsize=(5,3))\n",
-    "plt.plot(z, sig, label='σ(z)')\n",
-    "plt.plot(z, sig_prime, label=\"σ'(z)\")\n",
-    "plt.axvline(0, color='gray', linestyle='--', linewidth=1)\n",
-    "plt.xlabel('z')\n",
-    "plt.ylabel('value')\n",
-    "plt.title('Sigmoid and its derivative')\n",
-    "plt.ylim(-0.05, 1.05)\n",
-    "plt.grid(alpha=0.3)\n",
-    "plt.legend()\n",
-    "plt.show()\n"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
     "## 3) Binary Cross-Entropy (Log Loss)\n",
     "\n",
     "- **Why**: measure how bad a prediction is.\n",
