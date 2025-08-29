@@ -32,9 +32,9 @@ Matrices do many dot products at once: **y = W x + b**.
 
 ## 2) Start simple: the one‑neuron classifier (a.k.a. logistic regression)
 
-**Score:** \( z = \mathbf{w}\cdot\mathbf{x} + b \) → **Probability:** \( \sigma(z) = \frac{1}{1+e^{-z}} \).  
+**Score:** $ z = \mathbf{w}\cdot\mathbf{x} + b $ → **Probability:** $ \sigma(z) = \frac{1}{1+e^{-z}} $.  
 **Loss:** binary cross‑entropy (small if confident & correct; large if confidently wrong).  
-**Learning:** nudge \( \mathbf{w}, b \) to reduce loss (gradient descent; the key term is \(p - y\)).
+**Learning:** nudge $ \mathbf{w}, b $ to reduce loss (gradient descent; the key term is $p - y$).
 
 > This is your “hello world” of ML. It’s already useful and very interpretable.
 
@@ -48,11 +48,11 @@ If you have the separate “Math for the Bunny Classifier (IB IA)” handout, th
 **Two common fixes:**
 
 1) **Feature engineering / higher‑degree polynomials.**  
-   Create new features like \(x_1^2, x_1x_2, x_2^2,\dots\). This can work, but in high dimensions, the number of polynomial terms **explodes** combinatorially and models become wiggly/unstable (overfitting, “Runge phenomenon”).
+   Create new features like $x_1^2, x_1x_2, x_2^2,\dots$. This can work, but in high dimensions, the number of polynomial terms **explodes** combinatorially and models become wiggly/unstable (overfitting, “Runge phenomenon”).
 
 2) **Learn features with neurons (nonlinearities).**  
    A layer does **linear → nonlinearity** (e.g., ReLU). Stacking layers composes simple pieces to carve complicated shapes.  
-   - ReLU: \( \mathrm{ReLU}(t)=\max(0,t) \).  
+   - ReLU: $ \mathrm{ReLU}(t)=\max(0,t) $.  
    - Neural nets with ReLU are **piecewise linear**—like many flat tiles arranged into complex boundaries.  
    - **Universal approximation:** with enough hidden units, a one‑hidden‑layer net can approximate any reasonable function—but **depth** often does it **more efficiently** (fewer parameters) by reusing building blocks.
 
@@ -63,8 +63,8 @@ If you have the separate “Math for the Bunny Classifier (IB IA)” handout, th
 ## 4) What a neuron layer does (minimal math)
 
 Given input vector **x**:
-- Linear mix: \( \mathbf{h} = W\mathbf{x} + \mathbf{b} \) (many weighted sums at once).
-- Bend it: \( \mathbf{a} = \mathrm{ReLU}(\mathbf{h}) \) (or GELU/Tanh).  
+- Linear mix: $ \mathbf{h} = W\mathbf{x} + \mathbf{b} $ (many weighted sums at once).
+- Bend it: $ \mathbf{a} = \mathrm{ReLU}(\mathbf{h}) $ (or GELU/Tanh).  
 Stack several **(Linear → Nonlinear)** blocks, then finish with a simple classifier head.
 
 **Why nonlinearity matters:** If you only stack linear layers, it collapses to a single linear layer. The “bend” is what creates expressive power.
@@ -97,9 +97,9 @@ Text isn’t numeric. We:
 
 **Step 1: Scaled dot‑product attention (one head).**  
 Given a sequence of embeddings, make three matrices:
-- \(Q = X W_Q\) (queries), \(K = X W_K\) (keys), \(V = X W_V\) (values).  
-- Weights between positions: \( \mathrm{AttnWeights} = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) \).  
-- Mix values: \( \mathrm{Head} = \mathrm{AttnWeights}\,V \).  
+- $Q = X W_Q$ (queries), $K = X W_K$ (keys), $V = X W_V$ (values).  
+- Weights between positions: $ \mathrm{AttnWeights} = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) $.  
+- Mix values: $ \mathrm{Head} = \mathrm{AttnWeights}\,V $.  
 
 Interpretation: each token *looks* at others and pulls in the most relevant information via dot products.
 
