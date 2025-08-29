@@ -6,15 +6,18 @@
 
 ---
 
-## 0) How to use this guide
+<details>
+<summary>## 0) How to use this guide</summary>
 
 - **Prereqs:** comfort with functions, vectors, basic derivatives (slope idea), logs, and Python. PyTorch is used in the labs.
 - **Path:** Linear → Nonlinear (neurons) → Deep nets → Attention → Transformers → LLMs.
 - **Mindset:** always ask: *what is the input, what is the output, what’s the loss, how do weights change to reduce loss?*
+</details>
 
 ---
 
-## 1) Why linear algebra shows up everywhere
+<details>
+<summary>## 1) Why linear algebra shows up everywhere</summary>
 
 **Data as vectors.** We turn things into numbers:
 - An image → a long list of pixel intensities → a vector **x**.
@@ -47,28 +50,32 @@ A hyperplane is a subspace with one dimension less than its surrounding space:
 </details>
 
 > TL;DR: Linear algebra is the language of stacking and mixing features. It's compact, fast, and maps cleanly to GPUs.
+</details>
 
 ---
 
-## 2) Start simple: the one‑neuron classifier (a.k.a. logistic regression)
+<details>
+<summary>## 2) Start simple: the one‑neuron classifier (a.k.a. logistic regression)</summary>
 
 **Score:** $ z = \mathbf{w}\cdot\mathbf{x} + b $ → **Probability:** $ \sigma(z) = \frac{1}{1+e^{-z}} $.  
 **Loss:** binary cross‑entropy (small if confident & correct; large if confidently wrong).  
 **Learning:** nudge $ \mathbf{w}, b $ to reduce loss (gradient descent; the key term is $p - y$).
 
 > This is your “hello world” of ML. It’s already useful and very interpretable.
+</details>
 
 If you have the separate “Math for the Bunny Classifier (IB IA)” handout, that’s the detailed version of this section.
 
 ---
 
-## 3) Why linear isn’t enough (and what to do about it)
+<details>
+<summary>## 3) Why linear isn't enough (and what to do about it)</summary>
 
 **Problem:** Some patterns (like XOR) are *not* separable by a straight line in any simple feature space.  
 **Two common fixes:**
 
 1) **Feature engineering / higher‑degree polynomials.**  
-   Create new features like $x_1^2, x_1x_2, x_2^2,\dots$. This can work, but in high dimensions, the number of polynomial terms **explodes** combinatorially and models become wiggly/unstable (overfitting, “Runge phenomenon”).
+   Create new features like $x_1^2, x_1x_2, x_2^2,\dots$. This can work, but in high dimensions, the number of polynomial terms **explodes** combinatorially and models become wiggly/unstable (overfitting, "Runge phenomenon").
 
 2) **Learn features with neurons (nonlinearities).**  
    A layer does **linear → nonlinearity** (e.g., ReLU). Stacking layers composes simple pieces to carve complicated shapes.  
@@ -77,10 +84,12 @@ If you have the separate “Math for the Bunny Classifier (IB IA)” handout, th
    - **Universal approximation:** with enough hidden units, a one‑hidden‑layer net can approximate any reasonable function—but **depth** often does it **more efficiently** (fewer parameters) by reusing building blocks.
 
 > Intuition: Polynomials try one giant global curve; deep nets build with LEGO bricks.
+</details>
 
 ---
 
-## 4) What a neuron layer does (minimal math)
+<details>
+<summary>## 4) What a neuron layer does (minimal math)</summary>
 
 Given input vector **x**:
 - Linear mix: $ \mathbf{h} = W\mathbf{x} + \mathbf{b} $ (many weighted sums at once).
@@ -88,10 +97,12 @@ Given input vector **x**:
 Stack several **(Linear → Nonlinear)** blocks, then finish with a simple classifier head.
 
 **Why nonlinearity matters:** If you only stack linear layers, it collapses to a single linear layer. The “bend” is what creates expressive power.
+</details>
 
 ---
 
-## 5) Training deep nets (the gist)
+<details>
+<summary>## 5) Training deep nets (the gist)</summary>
 
 - **Objective:** choose weights to make loss small on training data *and* on new data.
 - **Backpropagation:** chain rule to compute gradients efficiently.
@@ -99,10 +110,12 @@ Stack several **(Linear → Nonlinear)** blocks, then finish with a simple class
 - **Overfitting:** when training loss ↓ but validation loss ↑.  
   Fixes: more data, augmentation, weight decay (L2), dropout, simpler model, early stopping.
 - **Learning rate:** too high → explode; too low → crawl. Use schedules / warmup.
+</details>
 
 ---
 
-## 6) From words to vectors (tokenization & embeddings)
+<details>
+<summary>## 6) From words to vectors (tokenization & embeddings)</summary>
 
 Text isn’t numeric. We:
 1) **Tokenize** into subwords (e.g., “play”, “##ing”). This keeps vocab manageable.
@@ -110,10 +123,12 @@ Text isn’t numeric. We:
    Nearby vectors tend to represent related meanings—because the model *learned* to put them near to reduce prediction error.
 
 > Geometry again: meanings become positions; dot products measure “how related.”
+</details>
 
 ---
 
-## 7) Attention in two steps (the core of Transformers)
+<details>
+<summary>## 7) Attention in two steps (the core of Transformers)</summary>
 
 **Step 1: Scaled dot‑product attention (one head).**  
 Given a sequence of embeddings, make three matrices:
@@ -128,10 +143,12 @@ Interpretation: each token *looks* at others and pulls in the most relevant info
 - Add a small MLP (feed‑forward) and **residual connections** (skip paths) + LayerNorm.  
 - **Positional encoding** tells the model “where” tokens are in the sequence.  
 Stack N of these blocks ⇒ a **Transformer**.
+</details>
 
 ---
 
-## 8) What an LLM actually learns
+<details>
+<summary>## 8) What an LLM actually learns</summary>
 
 - **Objective:** *next‑token prediction*. Given context, predict the next token.  
 - **Loss:** cross‑entropy over the vocabulary (like many‑class logistic regression).  
@@ -140,22 +157,26 @@ Stack N of these blocks ⇒ a **Transformer**.
 - **Limits & safety:** LLMs imitate patterns; they can hallucinate or reflect biases in data. Guardrails and evaluation matter.
 
 > Big picture: an LLM is a giant stack of attention blocks trained to predict the next symbol really, really well.
+</details>
 
 ---
 
-## 9) Linear vs. polynomial vs. deep nets — quick compare
+<details>
+<summary>## 9) Linear vs. polynomial vs. deep nets — quick compare</summary>
 
 | Approach | Strengths | Weaknesses | When to use |
 |---|---|---|---|
 | Linear (logistic/softmax) | Simple, fast, interpretable | Only straight cuts | When features are already good (e.g., tabular with strong signals) |
 | Polynomial features / kernels | Can model curves without deep nets | Can blow up in size; tough at large scale | Small/medium problems, classic SVM/RBF settings |
 | Deep nets (ReLU/Conv/Attention) | Learn features; parameter‑efficient with depth; scales | Needs data/compute; harder to debug | Images, audio, language; large/complex patterns |
+</details>
 
 ---
 
-## 10) Labs (short, scaffolded)
+<details>
+<summary>## 10) Labs (short, scaffolded)</summary>
 
-> All labs use Python + PyTorch. Run in Google Colab or local. Each lab has a **Checkpoint** so you know you’re on track.
+> All labs use Python + PyTorch. Run in Google Colab or local. Each lab has a **Checkpoint** so you know you're on track.
 
 ### Lab 0 — One‑neuron Bunny Classifier (recap)
 - Implement logistic regression on your bunny dataset.
@@ -185,66 +206,88 @@ loss_fn = nn.BCEWithLogitsLoss()
 ```
 - **Checkpoint:** validation accuracy > Lab 0; plot learning curves.
 
-### Lab 2 — Decision boundaries on toy 2D data (intuition builder)
+<details>
+<summary>### Lab 2 — Decision boundaries on toy 2D data (intuition builder)</summary>
+
 - Train logistic regression vs. MLP on `sklearn.datasets.make_moons`.  
 - **Checkpoint:** visualize boundary; see linear fail and MLP succeed.
+</details>
 
-### Lab 3 — From n‑grams to a tiny char‑model (Makemore‑style)
+<details>
+<summary>### Lab 3 — From n‑grams to a tiny char‑model (Makemore‑style)</summary>
+
 - Follow Karpathy’s *Zero‑to‑Hero* char‑model steps: unigram → bigram → MLP.  
 - Train on a small names dataset; sample new names.  
 - **Checkpoint:** generated names look name‑like.
+</details>
 
-### Lab 4 — Build one attention head (toy)
+<details>
+<summary>### Lab 4 — Build one attention head (toy)</summary>
+
 - Implement scaled dot‑product attention for a 1D toy sequence (e.g., predict a missing token that repeats earlier).
 ```python
 scores = (Q @ K.transpose(-1,-2)) / (d_k ** 0.5)   # [B, T, T]
 weights = scores.softmax(dim=-1)                    # attention over positions
 out = weights @ V                                   # [B, T, d_v]
 ```
+</details>
 
-### Lab 5 — nanoGPT on tiny data (CPU‑friendly settings)
+<details>
+<summary>### Lab 5 — nanoGPT on tiny data (CPU‑friendly settings)</summary>
+
 - Repo: `karpathy/nanoGPT`. Train a **character‑level** model on Tiny Shakespeare *or your own story text*.
 - Use a **small config** (e.g., n_layer=2, n_head=2, n_embd=128, block_size=64, batch_size small).  
 - Train just enough steps to overfit a few pages (to see learning), then a bit more data to generalize slightly.  
 - **Checkpoint:** loss falls from ~4–5 toward ~1–2; samples look text‑like.
+</details>
 
-### Lab 6 — Sampling & safety
+<details>
+<summary>### Lab 6 — Sampling & safety</summary>
+
 - Play with temperature, top‑k/top‑p; collect examples of factual vs. creative outputs.
 - Discuss *hallucination* and how to detect it; add a rule: “verify before trust.”
 - **Checkpoint:** a one‑page reflection on when to trust model outputs.
+</details>
 
 ---
 
-## 11) Common misconceptions (fast fixes)
+<details>
+<summary>## 11) Common misconceptions (fast fixes)</summary>
 
 - “Why not just use high‑degree polynomials?” → Parameter blow‑up; poor scaling; deep nets reuse parts (compositionality).  
 - “Do LLMs ‘understand’?” → They model patterns in text extremely well; they don’t have human‑style grounded experience by default.  
 - “More depth always better?” → Up to a point and with enough data/regularization. Watch validation curves.
+</details>
 
 ---
 
-## 12) Mini‑glossary
+<details>
+<summary>## 12) Mini‑glossary</summary>
 
 - **Activation (ReLU/GELU):** adds nonlinearity so layers don’t collapse into one big linear map.  
 - **Embedding:** learned vector for a token.  
 - **Attention:** lets a token gather info from others using dot products (similarity).  
 - **Transformer block:** attention + MLP + residuals + layer norm.  
 - **Cross‑entropy:** loss used for classification/next‑token prediction.  
-- **Overfitting:** model memorizes training data patterns that don’t generalize.
+- **Overfitting:** when model memorizes training data patterns that don’t generalize.
+</details>
 
 ---
 
-## 13) Where to learn more (friendly options)
+<details>
+<summary>## 13) Where to learn more (friendly options)</summary>
 
 - **Andrej Karpathy — Zero to Hero** (videos + code).  
 - **karpathy/nanoGPT** (read the README & training scripts).  
 - **3Blue1Brown — Neural Networks** (visual intuition).  
 - **Hugging Face — NLP Course** (transformers & practical tips).  
 - **fast.ai — Practical Deep Learning** (applied focus).
+</details>
 
 ---
 
-## 14) Optional: a 6‑week plan (≈3–5 hrs/week)
+<details>
+<summary>## 14) Optional: a 6‑week plan (≈3–5 hrs/week)</summary>
 
 - **W1:** Lab 0 + review vectors/dot product/sigmoid/loss.  
 - **W2:** Lab 1 + overfitting/regularization.  
@@ -254,9 +297,12 @@ out = weights @ V                                   # [B, T, d_v]
 - **W6:** Lab 5 nanoGPT + Lab 6 sampling/safety reflection.
 
 > Output: a folder of working notebooks + a short write‑up per lab (what you tried; curves; what you learned).
+</details>
 
 ---
 
-## 15) Appendix: Why depth helps (intuition only)
+<details>
+<summary>## 15) Appendix: Why depth helps (intuition only)</summary>
 
 Depth = composing simple transforms. Many real‑world rules are **compositional** (edges → shapes → objects; characters → words → phrases → meaning). Deep nets mirror this hierarchy and reuse internal features, often requiring **far fewer** parameters than a flat giant polynomial to reach the same accuracy.
+</details>
