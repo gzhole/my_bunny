@@ -24,9 +24,29 @@
 **Weighted sums.** A dot product **w·x** is just “add up each feature × its importance.”  
 Matrices do many dot products at once: **y = W x + b**.
 
-**Geometry view.** Linear models draw a separating hyperplane. If two classes can be split by a straight “cut” in feature space, a linear model works great.
+**Geometry view.** Linear models draw a separating hyperplane. If two classes can be split by a straight "cut" in feature space, a linear model works great.
 
-> TL;DR: Linear algebra is the language of stacking and mixing features. It’s compact, fast, and maps cleanly to GPUs.
+<details>
+<summary>🔍 What's a hyperplane in different dimensions? (Click to expand)</summary>
+
+A hyperplane is a subspace with one dimension less than its surrounding space:
+
+- **1D (1 feature)**: A point (e.g., x = 2.5)  
+  → Splits the number line into left/right
+
+- **2D (2 features)**: A line (e.g., y = 2x + 1)  
+  → Splits the plane into two half-planes
+
+- **3D (3 features)**: A flat plane (e.g., z = x + y + 5)  
+  → Splits 3D space into two half-spaces
+
+- **nD (n features)**: An (n-1) dimensional hyperplane  
+  → Still just one "straight cut" in n-dimensional space
+
+**Key insight**: A linear model can only make one straight cut through feature space. For more complex patterns (like spirals or XOR), we'll need nonlinear models.
+</details>
+
+> TL;DR: Linear algebra is the language of stacking and mixing features. It's compact, fast, and maps cleanly to GPUs.
 
 ---
 
