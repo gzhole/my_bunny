@@ -49,6 +49,78 @@ A hyperplane is a subspace with one dimension less than its surrounding space:
 **Key insight**: A linear model can only make one straight cut through feature space. For more complex patterns (like spirals or XOR), we'll need nonlinear models.
 </details>
 
+<details>
+<summary>🔍 How ReLUs can build quadratic functions (Click to expand)</summary>
+
+Let's see how we can use ReLUs to approximate a quadratic function like f(x) = x². The key insight is that while a single ReLU is piecewise linear, we can combine multiple ReLUs to create smooth curves.
+
+### Building x² with ReLUs
+
+We'll use a simple combination of ReLUs to create a quadratic function. The trick is to use the square of ReLUs:
+
+```
+f_approx(x) = ReLU(x)² + ReLU(-x)²
+```
+
+### How It Works
+
+- For x ≥ 0:
+  - ReLU(x) = x
+  - ReLU(-x) = 0
+  - f_approx(x) = x² + 0 = x²
+  
+- For x ≤ 0:
+  - ReLU(x) = 0
+  - ReLU(-x) = -x
+  - f_approx(x) = 0 + (-x)² = x²
+
+### Visual Representation
+
+Parabola opens upward; the dot marks the minimum at x = 0.
+
+```
+        |                y
+        |
+        |        \       /
+        |         \     /
+        |          \   /
+--------+-----------•----------- x
+                    0
+```
+
+### Key Insights
+
+1. The first term `ReLU(x)²` handles the right side of the parabola (x ≥ 0)
+2. The second term `ReLU(-x)²` handles the left side (x ≤ 0)
+3. At x=0, both terms are zero, creating the minimum point
+4. The combination gives the U‑shaped parabola with a minimum at x=0
+
+### Shifted quadratic (x+1)²
+
+We can shift the minimum to x = −1 by shifting the ReLUs:
+
+```
+g(x) = ReLU(x + 1)² + ReLU(−x − 1)² = (x + 1)²
+```
+
+- For x ≥ −1: ReLU(x+1) = x+1, ReLU(−x−1) = 0 ⇒ g(x) = (x+1)²
+- For x ≤ −1: ReLU(x+1) = 0, ReLU(−x−1) = −x−1 ⇒ g(x) = (x+1)²
+
+This matches your earlier polynomial example exactly and shows how a simple shift moves the parabola’s vertex.
+
+### Better Approximations
+
+For more complex curves, we can use more ReLUs with different shifts and scales:
+
+```
+f_approx(x) = ∑ w_i * ReLU(x - a_i)² + b_i
+```
+
+This is essentially what neural networks do - they learn the weights (w_i), shifts (a_i), and biases (b_i) automatically through training to approximate complex functions.
+
+In practice, deep networks use many such units in parallel to create smooth approximations of complex, high-dimensional functions.
+</details>
+
 > TL;DR: Linear algebra is the language of stacking and mixing features. It's compact, fast, and maps cleanly to GPUs.
 </details>
 
@@ -110,6 +182,25 @@ Stack several **(Linear → Nonlinear)** blocks, then finish with a simple class
 - **Overfitting:** when training loss ↓ but validation loss ↑.  
   Fixes: more data, augmentation, weight decay (L2), dropout, simpler model, early stopping.
 - **Learning rate:** too high → explode; too low → crawl. Use schedules / warmup.
+
+<details>
+<summary>Why add more neurons (width)?</summary>
+
+* **Expressive power (more “hinges”).** With ReLU, each hidden neuron can add a hinge to the function. More neurons → more pieces → can fit more complex curves/surfaces.
+* **Richer learned features.** Each neuron can specialize in a pattern (edge, curve, token interaction). More neurons = a larger “vocabulary” of features.
+* **Easier optimization (often).** Over‑parameterized nets (wider than needed) can be easier to train; there are many good solutions for SGD/Adam to find.
+
+When it can hurt:
+* **Overfitting risk.** More parameters can memorize small/noisy datasets. Watch validation loss/accuracy.
+* **Compute/memory.** Wider layers increase FLOPs and RAM; training slows down.
+
+Rules of thumb for students:
+* Start modest (e.g., 32–128 hidden units) → increase until validation stops improving.
+* Add regularization as you widen: weight decay, dropout, data augmentation, early stopping.
+* Prefer adding a little **depth** before making layers extremely wide; depth reuses features efficiently.
+* Plot train vs. validation curves; choose the smallest width that achieves your target validation accuracy.
+
+</details>
 </details>
 
 ---
